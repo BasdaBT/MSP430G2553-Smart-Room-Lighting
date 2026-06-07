@@ -1,6 +1,7 @@
 # FIXED
 
 LDR.obj: ../LDR.c
+LDR.obj: ../ldr.h
 LDR.obj: /home/omer-ahin/ti/ccs2050/ccs/ccs_base/msp430/include/msp430.h
 LDR.obj: /home/omer-ahin/ti/ccs2050/ccs/ccs_base/msp430/include/msp430g2553.h
 LDR.obj: /home/omer-ahin/ti/ccs2050/ccs/ccs_base/msp430/include/in430.h
@@ -18,6 +19,8 @@ LDR.obj: /home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/
 LDR.obj: /home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/sys/_stdint.h
 
 ../LDR.c:
+
+../ldr.h:
 
 /home/omer-ahin/ti/ccs2050/ccs/ccs_base/msp430/include/msp430.h:
 

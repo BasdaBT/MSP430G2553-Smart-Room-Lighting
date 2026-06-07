@@ -17,21 +17,16 @@
    {
       "directory" : "/home/omer-ahin/workspace_ccstheia/Blink LED/Debug",
       "command"   : "clang++ -I\"/home/omer-ahin/ti/ccs2050/ccs/ccs_base/msp430/include\" -I\"/home/omer-ahin/workspace_ccstheia/Blink LED\" -I\"/home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430G2553__ -xc",
-      "file"      : "/home/omer-ahin/workspace_ccstheia/Blink LED/PIR.c"
-   },
-   {
-      "directory" : "/home/omer-ahin/workspace_ccstheia/Blink LED/Debug",
-      "command"   : "clang++ -I\"/home/omer-ahin/ti/ccs2050/ccs/ccs_base/msp430/include\" -I\"/home/omer-ahin/workspace_ccstheia/Blink LED\" -I\"/home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430G2553__ -xc",
-      "file"      : "/home/omer-ahin/workspace_ccstheia/Blink LED/LDR.c"
-   },
-   {
-      "directory" : "/home/omer-ahin/workspace_ccstheia/Blink LED/Debug",
-      "command"   : "clang++ -I\"/home/omer-ahin/ti/ccs2050/ccs/ccs_base/msp430/include\" -I\"/home/omer-ahin/workspace_ccstheia/Blink LED\" -I\"/home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430G2553__ -xc",
       "file"      : "/home/omer-ahin/workspace_ccstheia/Blink LED/uart.c"
    },
    {
       "directory" : "/home/omer-ahin/workspace_ccstheia/Blink LED/Debug",
       "command"   : "clang++ -I\"/home/omer-ahin/ti/ccs2050/ccs/ccs_base/msp430/include\" -I\"/home/omer-ahin/workspace_ccstheia/Blink LED\" -I\"/home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430G2553__ -xc",
-      "file"      : "/home/omer-ahin/workspace_ccstheia/Blink LED/pwm.c"
+      "file"      : "/home/omer-ahin/workspace_ccstheia/Blink LED/init.c"
+   },
+   {
+      "directory" : "/home/omer-ahin/workspace_ccstheia/Blink LED/Debug",
+      "command"   : "clang++ -I\"/home/omer-ahin/ti/ccs2050/ccs/ccs_base/msp430/include\" -I\"/home/omer-ahin/workspace_ccstheia/Blink LED\" -I\"/home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430G2553__ -xc",
+      "file"      : "/home/omer-ahin/workspace_ccstheia/Blink LED/hw_control.c"
    }
 ]

@@ -1,24 +1,15 @@
+// uart.c
 #include <msp430.h>
+#include "uart.h"
 
-#define TX_PIN BIT1  // P1.1 artık TX (Gönderme)
-#define RX_PIN BIT2  // P1.2 artık RX (Alma)
+#define TX_PIN BIT1  // P1.1 TX (Gönderme)
+#define RX_PIN BIT2  // P1.2 RX (Alma)
 
 // 1 MHz saat hızı ve 9600 Baud Rate için bekleme süreleri
 // 1000000 / 9600 = ~104 cycle
 #define BIT_TIME 104 
 #define HALF_BIT_TIME 52
 
-// Senin orijinal fonksiyon isminle:
-void UART_Init() {
-    // TX Pin Ayarı (P1.1)
-    P1DIR |= TX_PIN;     // Çıkış olarak ayarla
-    P1OUT |= TX_PIN;     // UART hattı boşta (idle) iken her zaman HIGH(1) olmalıdır
-
-    // RX Pin Ayarı (P1.2)
-    P1DIR &= ~RX_PIN;    // Giriş olarak ayarla
-}
-
-// Senin orijinal fonksiyon isminle:
 void UART_PrintChar(char c) {
     // Start Biti (Hattı LOW'a çekiyoruz)
     P1OUT &= ~TX_PIN;
@@ -41,15 +32,13 @@ void UART_PrintChar(char c) {
     __delay_cycles(BIT_TIME);
 }
 
-// Senin orijinal fonksiyon isminle:
 void UART_PrintText(char *text) {
     while (*text) {
         UART_PrintChar(*text++);
     }
 }
 
-// Gelen veriyi okumak istersen diye (Bunu yeni ekledim)
-char UART_ReceiveChar() {
+char UART_ReceiveChar(void) {
     char rxData = 0;
     
     // Start bitini bekle

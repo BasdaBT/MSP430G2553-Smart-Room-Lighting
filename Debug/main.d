@@ -16,11 +16,14 @@ main.obj: /home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS
 main.obj: /home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/machine/_types.h
 main.obj: /home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/machine/_stdint.h
 main.obj: /home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/sys/_stdint.h
-main.obj: /home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/string.h
-main.obj: /home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/xlocale/_string.h
 main.obj: /home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/stdbool.h
+main.obj: ../init.h
+main.obj: ../hw_control.h
+main.obj: ../uart.h
 main.obj: ../i2c.h
 main.obj: ../ssd1306.h
+main.obj: /home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/string.h
+main.obj: /home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/xlocale/_string.h
 
 ../main.c:
 
@@ -54,13 +57,19 @@ main.obj: ../ssd1306.h
 
 /home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/sys/_stdint.h:
 
-/home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/string.h:
-
-/home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/xlocale/_string.h:
-
 /home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/stdbool.h:
+
+../init.h:
+
+../hw_control.h:
+
+../uart.h:
 
 ../i2c.h:
 
 ../ssd1306.h:
+
+/home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/string.h:
+
+/home/omer-ahin/ti/ccs2050/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/xlocale/_string.h:
 

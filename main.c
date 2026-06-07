@@ -1,84 +1,176 @@
 #include <msp430.h>
 #include <stdint.h>
-#include <string.h>
 #include <stdbool.h>
+
+#include "init.h"
+#include "hw_control.h"
+#include "uart.h"
 #include "i2c.h"
 #include "ssd1306.h"
 
-#define LONG_DELAY  __delay_cycles(3000000)
-#define SHORT_DELAY __delay_cycles(50000)
-
-char bright[] = "Ortam Aydinlik";
-char led_off[] = "Led Kapali";
-char hareket_Var[] = "HAREKET VAR   ";
-char hareket_Yok[] = "HAREKET YOK   ";
-char percent[] = "%";
 char tempBuffer[16];
 
-bool hareket = false;
+volatile bool g_motion_detected = false; 
 
-void PIR_Init(void);
-bool HAREKET(void);
-void control(unsigned int trueADC);
-void bluutooth(unsigned int trueADC);
+typedef enum {
+    STATE_DAYLIGHT,
+    STATE_NIGHT_IDLE,
+    STATE_NIGHT_ACTIVE
+} SystemState_t;
+
+SystemState_t current_state = STATE_DAYLIGHT;
+SystemState_t previous_state = STATE_DAYLIGHT; 
+bool g_first_run = true;
+
+// Fonksiyon Prototipleri
+void System_BootSequence(void);
+void System_UpdateState(unsigned int lightPercent);
+void UI_UpdateOLED(unsigned int lightPercent);
+void Comms_SendBluetooth(unsigned int lightPercent);
 
 int main(void) {
-    WDTCTL = WDTPW | WDTHOLD;                  
-    LONG_DELAY;
-    
-    PIR_Init();            
-    ADC_Init();
+    WDTCTL = WDTPW | WDTHOLD;
+    __delay_cycles(3000000);
+
+    MCU_Init(); 
     i2c_init();
-    UART_Init();
-    PWM_Init(); 
     ssd1306_init();
     
     ssd1306_clearDisplay();
-
-    LONG_DELAY;
+    __delay_cycles(3000000);
     
+    System_BootSequence();
+    
+    __bis_SR_register(GIE); 
+
     while(1) {
-        unsigned int adcValue = LDR_Oku();
-        unsigned int trueADC = LDR_true(adcValue);
-        hareket = HAREKET();
+
+        unsigned int rawADC = LDR_ReadRaw();
+        unsigned int lightPercent = LDR_CalculatePercentage(rawADC);
         
-        control(trueADC);
+        System_UpdateState(lightPercent);
+        UI_UpdateOLED(lightPercent);
+        Comms_SendBluetooth(lightPercent);
         
-        ssd1306_printText(0, 4, percent);
-        ssd1306_printUI32(1, 4, (uint32_t)trueADC, HCENTERUL_OFF);
-        
-        bluutooth(trueADC);
-        SHORT_DELAY;
+        __delay_cycles(100000); 
     }
 }
 
-void control(unsigned int trueADC) {
-    ssd1306_clearDisplay();
+void System_BootSequence(void) {
+    ssd1306_printTextBlock(15, 2, ">>> SMART SYSTEM <<<");
+    ssd1306_printTextBlock(30, 4, "INITIATING");
     
-    if (trueADC >= 50) {
+    int i = 0;
+    for (i = 0; i < 4; i++) {
+        ssd1306_printText(45 + (i * 10), 6, ".");
+        __delay_cycles(1000000); 
+    }
+    
+    ssd1306_clearDisplay();
+    __delay_cycles(3000000);
+}
+
+void System_UpdateState(unsigned int lightPercent) {
+    if (lightPercent >= 40) {
+        current_state = STATE_DAYLIGHT;
         PWM_SetDuty(0);
-        ssd1306_printTextBlock(0, 0, bright);
-        ssd1306_printTextBlock(0, 1, led_off);
     } else {
-        if (hareket) {
-            PWM_SetDuty(100);
-            ssd1306_printTextBlock(0, 2, hareket_Var);
+        if (g_motion_detected) {
+            current_state = STATE_NIGHT_ACTIVE;
+            PWM_SetDuty(100 - lightPercent); 
         } else {
+            current_state = STATE_NIGHT_IDLE;
             PWM_SetDuty(0);
-            ssd1306_printTextBlock(0, 2, hareket_Yok);
         }
     }
 }
 
-void bluutooth(unsigned int trueADC) {
-    ssd1306_ultoa((uint32_t)trueADC, tempBuffer);
-    UART_PrintText("LDR Degeri: ");
-    UART_PrintText(tempBuffer);
+void UI_UpdateOLED(unsigned int lightPercent) {
+    if ((current_state != previous_state) || g_first_run) {
+        switch(current_state) {
+            case STATE_DAYLIGHT:
+                ssd1306_printText(0, 0, "[*] MOD: GUNDUZ   ");
+                ssd1306_printText(0, 2, "[ ] LED: KAPALI   ");
+                ssd1306_printText(0, 4, "( ) HRKT: YOK     ");
+                break;
+            case STATE_NIGHT_IDLE:
+                ssd1306_printText(0, 0, "[~] MOD: GECE     "); 
+                ssd1306_printText(0, 2, "[ ] LED: KAPALI   "); 
+                ssd1306_printText(0, 4, "( ) HRKT: BEKLIYOR"); 
+                break;
+            case STATE_NIGHT_ACTIVE:
+                ssd1306_printText(0, 0, "[~] MOD: GECE     ");
+                ssd1306_printText(0, 2, "[#] LED: YANIYOR! ");
+                ssd1306_printText(0, 4, "(!) HRKT: ALARM!  ");
+                break;
+        }
+        previous_state = current_state;
+        g_first_run = false;
+    }
     
-    if (hareket) {
-        UART_PrintText(" - Hareket VAR\r\n");
-    } else {
-        UART_PrintText(" - Hareket YOK\r\n");
+    char light_bar[13] = "[          ]"; 
+    uint8_t bar_count = lightPercent / 10;
+    
+    int i = 0;
+    for(i = 0; i < 10; i++) {
+        if(i < bar_count) {
+            light_bar[i+1] = '=';
+        }
+    }
+    ssd1306_printText(0, 6, "ISIK: %");
+    ssd1306_printUI32(45, 6, (uint32_t)lightPercent, HCENTERUL_OFF);
+    
+    if(lightPercent < 10) ssd1306_printText(51, 6, "  "); 
+    else if (lightPercent < 100) ssd1306_printText(57, 6, " "); 
+    
+    ssd1306_printText(0, 7, light_bar);
+
+    static char hb_chars[] = {'|', '/', '-', '\\'};
+    static uint8_t hb_idx = 0;
+    char hb_str[2] = {hb_chars[hb_idx], '\0'};
+    
+    ssd1306_printText(115, 0, hb_str); 
+    hb_idx++;
+    if(hb_idx > 3) hb_idx = 0;
+}
+
+void Comms_SendBluetooth(unsigned int lightPercent) {
+    UART_PrintText("\r\n+---[ SISTEM TELEMETRI ]---+\r\n");
+    
+    UART_PrintText("| ISIK SEVIYESI : %");
+    ssd1306_ultoa((uint32_t)lightPercent, tempBuffer);
+    UART_PrintText(tempBuffer);
+    UART_PrintText("\r\n");
+    
+    UART_PrintText("| SISTEM DURUMU : ");
+    switch(current_state) {
+        case STATE_DAYLIGHT:
+            UART_PrintText("GUNDUZ [*]\r\n");
+            break;
+        case STATE_NIGHT_IDLE:
+            UART_PrintText("GECE BEKLEME [-]\r\n");
+            break;
+        case STATE_NIGHT_ACTIVE:
+            UART_PrintText("HAREKET ALARMI [!]\r\n");
+            break;
+    }
+    UART_PrintText("+--------------------------+\r\n");
+}
+
+#pragma vector = PORT2_VECTOR
+__interrupt void Port_2_ISR(void) {
+    if (P2IFG & BIT0) {  
+        
+        __delay_cycles(1000); 
+        
+        if (P2IN & BIT0) {
+            g_motion_detected = true;   
+            P2IES |= BIT0;              
+        } else {
+            g_motion_detected = false;  
+            P2IES &= ~BIT0;             
+        }
+        
+        P2IFG &= ~BIT0;  
     }
 }
-//mspdebug rf2500 "prog Blink LED.out"

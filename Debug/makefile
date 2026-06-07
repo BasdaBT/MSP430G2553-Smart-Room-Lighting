@@ -8,11 +8,10 @@ GEN_OPTS__FLAG :=
 GEN_CMDS__FLAG := 
 
 ORDERED_OBJS += \
-"./LDR.obj" \
-"./PIR.obj" \
+"./hw_control.obj" \
 "./i2c.obj" \
+"./init.obj" \
 "./main.obj" \
-"./pwm.obj" \
 "./ssd1306.obj" \
 "./uart.obj" \
 "../lnk_msp430g2553.cmd" \
@@ -150,8 +149,8 @@ Blink\ LED.txt: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "LDR.obj" "PIR.obj" "i2c.obj" "main.obj" "pwm.obj" "ssd1306.obj" "uart.obj" 
-	-$(RM) "LDR.d" "PIR.d" "i2c.d" "main.d" "pwm.d" "ssd1306.d" "uart.d" 
+	-$(RM) "hw_control.obj" "i2c.obj" "init.obj" "main.obj" "ssd1306.obj" "uart.obj" 
+	-$(RM) "hw_control.d" "i2c.d" "init.d" "main.d" "ssd1306.d" "uart.d" 
 	-@echo ' '
 
 secondary-outputs: $(BIN_OUTPUTS)
