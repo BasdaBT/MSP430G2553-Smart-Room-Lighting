@@ -9,6 +9,6 @@
 	<templateProperties value="id=MSP430G2553.SmartLighting"/>
 	<connection value="common/targetdb/connections/TIMSP430-USB.xml"/>
 	<activeTargetConfiguration value="targetConfigs/MSP430G2553.ccxml"/>
-	<origin value="/home/omer-ahin/ti/msp430ware_3_80_14_01/examples/boards/MSP-EXP430G2ET/MSP-EXP430G2ET_Software_Examples/Firmware/Source/BlinkLED_MSP-EXP430G2ET/CCS/BlinkLED_MSP-EXP430G2ET.projectspec"/>
+	<origin value=""/>
 	<filesToOpen value="main.c"/>
 </projectOptions>

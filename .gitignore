@@ -11,6 +11,7 @@ Release/
 *_linkInfo.xml
 
 # clangd and editor caches
+.clangd
 .clangd/
 .cache/
 compile_commands.json
