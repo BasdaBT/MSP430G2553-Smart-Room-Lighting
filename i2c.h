@@ -14,21 +14,14 @@ extern "C"
 #endif
 
 #include <msp430.h>
+#include <stdbool.h>
 #include <stdint.h>
 
-unsigned char *PTxData;                                                       // Pointer to TX data
-unsigned char TxByteCtr;                                                      // number of bytes to TX
-
-/* ====================================================================
- * I2C Prototype Definitions
- * ==================================================================== */
 void i2c_init(void);
-void i2c_write(unsigned char, unsigned char *, unsigned char);
+bool i2c_write(uint8_t slave_address, const uint8_t *data, uint8_t length);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif
- /* I2C_H_ */ 
- 
+#endif /* I2C_H_ */

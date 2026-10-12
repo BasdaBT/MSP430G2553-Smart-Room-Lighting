@@ -1,48 +1,58 @@
-// hw_control.c
 #include "hw_control.h"
 #include <msp430.h>
 #include <stdint.h>
+#include "app_config.h"
 
-// ==========================================
-// LDR FONKSİYONLARI
-// ==========================================
-unsigned int LDR_ReadRaw(void) {
-    ADC10CTL0 |= ENC + ADC10SC;
-    while (ADC10CTL0 & ADC10BUSY);    
-    return ADC10MEM;                  
-}
-
-unsigned int LDR_CalculatePercentage(unsigned int rawADC) {
-    const uint32_t min_isik = 1; 
-    const uint32_t max_isik = 1004;
-    
-    if (rawADC < min_isik) rawADC = min_isik;
-    if (rawADC > max_isik) rawADC = max_isik;
-
-    uint32_t yuzde_isik = ((rawADC - min_isik) * 100) / (max_isik - min_isik);
-
-    static uint32_t y = 0; 
-    
-    if (y == 0) {
-        y = yuzde_isik;
-    } else {
-        y = ((y * 7) + yuzde_isik) >> 3; 
+unsigned int LDR_ReadRaw(void)
+{
+    ADC10CTL0 |= ENC | ADC10SC;
+    while (ADC10CTL1 & ADC10BUSY) {
+        /* Conversion completes in hardware. */
     }
-    
-    return (unsigned int)y;
+    return ADC10MEM;
 }
 
-// ==========================================
-// PIR FONKSİYONLARI
-// ==========================================
-bool PIR_IsMotionDetected(void) {
-    return (P2IN & BIT0) ? true : false;
+unsigned int LDR_CalculatePercentage(unsigned int rawADC)
+{
+    static uint32_t filtered_percent = 0;
+    static bool filter_initialized = false;
+    uint32_t light_percent;
+
+    if (rawADC < LDR_DARK_RAW) {
+        rawADC = LDR_DARK_RAW;
+    }
+    if (rawADC > LDR_BRIGHT_RAW) {
+        rawADC = LDR_BRIGHT_RAW;
+    }
+
+    light_percent = ((uint32_t)(rawADC - LDR_DARK_RAW) * 100U) /
+                    (LDR_BRIGHT_RAW - LDR_DARK_RAW);
+
+    if (!filter_initialized) {
+        filtered_percent = light_percent;
+        filter_initialized = true;
+    } else {
+        /* 1/8 low-pass filter reduces visible PWM and OLED jitter. */
+        filtered_percent = ((filtered_percent * 7U) + light_percent) >> 3;
+    }
+
+    return (unsigned int)filtered_percent;
 }
 
-// ==========================================
-// PWM FONKSİYONLARI
-// ==========================================
-void PWM_SetDuty(unsigned int duty) {
-    if (duty > PWM_PERIOD) duty = PWM_PERIOD; 
-    TA1CCR1 = duty;               
+bool PIR_IsMotionDetected(void)
+{
+    return (P1IN & PIR_PIN) != 0;
+}
+
+void PWM_SetDuty(unsigned int duty)
+{
+    if (duty > PWM_PERIOD_TICKS) {
+        duty = PWM_PERIOD_TICKS;
+    }
+    TA1CCR1 = duty;
+}
+
+unsigned int PWM_GetDuty(void)
+{
+    return TA1CCR1;
 }

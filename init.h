@@ -2,7 +2,7 @@
 #ifndef INIT_H_
 #define INIT_H_
 
-// Watchdog, LDR, PIR, PWM ve Yazılımsal UART pin ayarlarını yapar
-void MCU_Init(void); 
+/* Configures the 1 MHz clock, ADC, PIR interrupt and Timer_A PWM. */
+void MCU_Init(void);
 
 #endif

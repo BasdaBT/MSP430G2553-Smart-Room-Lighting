@@ -1,34 +1,43 @@
-// init.c
 #include "init.h"
 #include <msp430.h>
+#include "app_config.h"
 
-void MCU_Init(void) {
+static void Clock_Init(void)
+{
+    /* Factory calibration constants give UART and I2C reliable timing. */
+    if (CALBC1_1MHZ != 0xFF) {
+        DCOCTL = 0;
+        BCSCTL1 = CALBC1_1MHZ;
+        DCOCTL = CALDCO_1MHZ;
+    }
+}
+
+void MCU_Init(void)
+{
     WDTCTL = WDTPW | WDTHOLD;
+    Clock_Init();
 
-    // LDR Init
-    ADC10CTL0 = ADC10SHT_2 + ADC10ON; 
-    ADC10CTL1 = INCH_0;               
-    ADC10AE0 |= BIT0;                 
+    /* LDR: P1.0 / ADC10 channel A0. */
+    ADC10CTL0 = ADC10SHT_2 | ADC10ON;
+    ADC10CTL1 = ADC10SSEL_3 | INCH_0;
+    ADC10AE0 |= LDR_PIN;
 
-    // PIR Kesme (Interrupt) Init - Hoca için şov kısmı :)
-    P2DIR &= ~BIT0;
-    P2REN |= BIT0;
-    P2OUT &= ~BIT0;
-    P2IES &= ~BIT0;
-    P2IFG &= ~BIT0;
-    P2IE  |= BIT0; 
+    /* PIR: P1.5, pull-down, interrupt first on the rising edge. */
+    P1SEL &= ~PIR_PIN;
+    P1SEL2 &= ~PIR_PIN;
+    P1DIR &= ~PIR_PIN;
+    P1REN |= PIR_PIN;
+    P1OUT &= ~PIR_PIN;
+    P1IES &= ~PIR_PIN;
+    P1IFG &= ~PIR_PIN;
+    P1IE |= PIR_PIN;
 
-    // PWM Init
-    P2DIR |= BIT1;
-    P2SEL |= BIT1;              
-    P2SEL2 &= ~BIT1;
-    TA1CCR0 = 100;              
-    TA1CCTL1 = OUTMOD_7;        
-    TA1CCR1 = 0;                
-    TA1CTL = TASSEL_2 + MC_1 + TACLR; 
-
-    // Yazılımsal UART Init
-    P1DIR |= BIT1;              
-    P1OUT |= BIT1;              
-    P1DIR &= ~BIT2;             
+    /* LED PWM: P2.1 / Timer1_A capture-compare output 1. */
+    P2DIR |= PWM_LED_PIN;
+    P2SEL |= PWM_LED_PIN;
+    P2SEL2 &= ~PWM_LED_PIN;
+    TA1CCR0 = PWM_PERIOD_TICKS;
+    TA1CCTL1 = OUTMOD_7;
+    TA1CCR1 = 0;
+    TA1CTL = TASSEL_2 | MC_1 | TACLR;
 }

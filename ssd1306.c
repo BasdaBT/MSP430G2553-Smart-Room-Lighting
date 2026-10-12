@@ -5,7 +5,7 @@
 #include "ssd1306.h"
 #include "font_5x7.h"
 
-unsigned char buffer[17];                                               // buffer for data transmission to screen
+static uint8_t buffer[17];                                             // control byte + 16 display bytes
 
 /* ====================================================================
  * Horizontal Centering Number Array
@@ -71,26 +71,21 @@ void ssd1306_clearDisplay(void) {
 
     ssd1306_setPosition(0, 0);
     uint8_t i;
-    for (i = 64; i > 0; i--) {                                          // count down for loops when possible for ULP
-        uint8_t x;
-        for(x = 16; x > 0; x--) {
-            if (x == 1) {
-                buffer[x-1] = 0x40;
-            } else {
-                buffer[x-1] = 0x0;
-            }
-        }
+    buffer[0] = 0x40;
+    memset(&buffer[1], 0, 16);
+
+    for (i = 64; i > 0; i--) {
 
         i2c_write(SSD1306_I2C_ADDRESS, buffer, 17);
     }
 } // end ssd1306_clearDisplay
 
 void ssd1306_setPosition(uint8_t column, uint8_t page) {
-    if (column > 128) {
+    if (column >= SSD1306_LCDWIDTH) {
         column = 0;                                                     // constrain column to upper limit
     }
 
-    if (page > 8) {
+    if (page >= (SSD1306_LCDHEIGHT / 8)) {
         page = 0;                                                       // constrain page to upper limit
     }
 
@@ -103,21 +98,29 @@ void ssd1306_setPosition(uint8_t column, uint8_t page) {
     ssd1306_command(7);                                                 // Page end address
 } // end ssd1306_setPosition
 
-void ssd1306_printText(uint8_t x, uint8_t y, char *ptString) {
+void ssd1306_printText(uint8_t x, uint8_t y, const char *ptString) {
     ssd1306_setPosition(x, y);
 
     while (*ptString != '\0') {
+        uint8_t glyph = (uint8_t)*ptString;
         buffer[0] = 0x40;
 
         if ((x + 5) >= 127) {                                           // char will run off screen
             x = 0;                                                      // set column to 0
             y++;                                                        // jump to next page
+            if (y >= (SSD1306_LCDHEIGHT / 8)) {
+                break;
+            }
             ssd1306_setPosition(x, y);                                  // send position change to oled
+        }
+
+        if ((glyph < ' ') || (glyph > 0x7F)) {
+            glyph = '?';
         }
 
         uint8_t i;
         for(i = 0; i< 5; i++) {
-            buffer[i+1] = font_5x7[*ptString - ' '][i];
+            buffer[i+1] = font_5x7[glyph - ' '][i];
         }
 
         buffer[6] = 0x0;
@@ -128,14 +131,14 @@ void ssd1306_printText(uint8_t x, uint8_t y, char *ptString) {
     }
 } // end ssd1306_printText
 
-void ssd1306_printTextBlock(uint8_t x, uint8_t y, char *ptString) {
+void ssd1306_printTextBlock(uint8_t x, uint8_t y, const char *ptString) {
     char word[12];
     uint8_t i;
     uint8_t endX = x;
 
     if (*ptString != '\0')
         do {
-            i = 0; 
+            i = 0;
             while ((*ptString != ' ') && (*ptString != '\0') && i <= 10) {
                 word[i] = *ptString;
                 ptString++;
@@ -162,11 +165,11 @@ void ssd1306_printTextBlock(uint8_t x, uint8_t y, char *ptString) {
             //either space or null broke second while. Prevent pt from skipping null if so.
             if (i <= 10 && *ptString != '\0') {
                 ptString++;
-            } else if ((endX - 6) >= 0) { //buffer(char word[12]) filled, reverse the spacing (line 29 & 30)
+            } else if (endX >= 6) { //buffer(char word[12]) filled, reverse the spacing (line 29 & 30)
                 endX -= 6;              //prevent underflow
                 x = endX;
             }
-        } while (*ptString != '\0');           
+        } while (*ptString != '\0');
 }
 
 
@@ -226,6 +229,10 @@ void ssd1306_reverse(char *s)
 {
     uint8_t i, j;
     uint8_t c;
+
+    if ((s == 0) || (*s == '\0')) {
+        return;
+    }
 
     for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
         c = s[i];

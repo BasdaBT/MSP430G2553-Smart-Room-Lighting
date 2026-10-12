@@ -158,6 +158,6 @@
         </cconfiguration>
     </storageModule>
     <storageModule moduleId="cdtBuildSystem" version="4.0.0">
-        <project id="Blink LED.com.ti.ccstudio.buildDefinitions.MSP430.ProjectType.1952755024" name="MSP430" projectType="com.ti.ccstudio.buildDefinitions.MSP430.ProjectType"/>
+        <project id="MSP430G2553 Smart Lighting.com.ti.ccstudio.buildDefinitions.MSP430.ProjectType.1952755024" name="MSP430" projectType="com.ti.ccstudio.buildDefinitions.MSP430.ProjectType"/>
     </storageModule>
 </cproject>

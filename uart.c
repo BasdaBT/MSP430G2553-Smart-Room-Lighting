@@ -1,59 +1,45 @@
-// uart.c
 #include <msp430.h>
 #include "uart.h"
+#include "app_config.h"
 
-#define TX_PIN BIT1  // P1.1 TX (Gönderme)
-#define RX_PIN BIT2  // P1.2 RX (Alma)
+void UART_Init(void)
+{
+    /* USCI_A0: P1.1 RX and P1.2 TX, 9600 baud from 1 MHz SMCLK. */
+    P1SEL |= UART_RX_PIN | UART_TX_PIN;
+    P1SEL2 |= UART_RX_PIN | UART_TX_PIN;
 
-// 1 MHz saat hızı ve 9600 Baud Rate için bekleme süreleri
-// 1000000 / 9600 = ~104 cycle
-#define BIT_TIME 104 
-#define HALF_BIT_TIME 52
-
-void UART_PrintChar(char c) {
-    // Start Biti (Hattı LOW'a çekiyoruz)
-    P1OUT &= ~TX_PIN;
-    __delay_cycles(BIT_TIME);
-
-    // 8 Veri Biti 
-    int i = 0 ;
-    for (; i < 8; i++) {
-        if (c & 1) {
-            P1OUT |= TX_PIN;  
-        } else {
-            P1OUT &= ~TX_PIN; 
-        }
-        c >>= 1;                 
-        __delay_cycles(BIT_TIME);
-    }
-
-    // Stop Biti (Hattı tekrar HIGH'a çekiyoruz)
-    P1OUT |= TX_PIN;
-    __delay_cycles(BIT_TIME);
+    UCA0CTL1 |= UCSWRST;
+    UCA0CTL1 = UCSWRST | UCSSEL_2;
+    UCA0BR0 = (unsigned char)(SYSTEM_CLOCK_HZ / UART_BAUD_RATE);
+    UCA0BR1 = 0;
+    UCA0MCTL = UCBRS0;
+    UCA0CTL1 &= ~UCSWRST;
 }
 
-void UART_PrintText(char *text) {
+void UART_PrintChar(char c)
+{
+    while (!(IFG2 & UCA0TXIFG)) {
+        /* Wait until the transmit buffer is ready. */
+    }
+    UCA0TXBUF = (unsigned char)c;
+}
+
+void UART_PrintText(const char *text)
+{
     while (*text) {
         UART_PrintChar(*text++);
     }
 }
 
-char UART_ReceiveChar(void) {
-    char rxData = 0;
-    
-    // Start bitini bekle
-    while (P1IN & RX_PIN); 
-    __delay_cycles(HALF_BIT_TIME);  
-    
-    // 8 Veri Bitini Oku
-    int i = 0;
-    for (; i < 8; i++) {
-        __delay_cycles(BIT_TIME); 
-        if (P1IN & RX_PIN) {
-            rxData |= (1 << i);   
-        }
+bool UART_IsReceiveReady(void)
+{
+    return (IFG2 & UCA0RXIFG) != 0;
+}
+
+char UART_ReceiveChar(void)
+{
+    while (!UART_IsReceiveReady()) {
+        /* Blocking receive for optional command handling. */
     }
-    
-    __delay_cycles(BIT_TIME); 
-    return rxData;
+    return (char)UCA0RXBUF;
 }

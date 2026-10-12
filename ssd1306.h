@@ -85,8 +85,8 @@ void ssd1306_init(void);
 void ssd1306_command(unsigned char);
 void ssd1306_clearDisplay(void);
 void ssd1306_setPosition(uint8_t, uint8_t);
-void ssd1306_printText(uint8_t, uint8_t, char *);
-void ssd1306_printTextBlock(uint8_t, uint8_t, char *);
+void ssd1306_printText(uint8_t, uint8_t, const char *);
+void ssd1306_printTextBlock(uint8_t, uint8_t, const char *);
 void ssd1306_printUI32(uint8_t, uint8_t, uint32_t, uint8_t);
 
 uint8_t ssd1306_digits(uint32_t);
@@ -97,6 +97,4 @@ void ssd1306_reverse(char *);
 }
 #endif
 
-#endif
- /* SSD1306_H_ */
- 
+#endif /* SSD1306_H_ */

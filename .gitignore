@@ -1,0 +1,20 @@
+# Code Composer Studio build output
+Debug/
+Release/
+
+# Compiler and linker artifacts
+*.d
+*.obj
+*.out
+*.map
+*.txt
+*_linkInfo.xml
+
+# clangd and editor caches
+.clangd/
+.cache/
+compile_commands.json
+
+# OS files
+.DS_Store
+Thumbs.db
